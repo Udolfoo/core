@@ -610,7 +610,7 @@ void AreaAura::Update(uint32 diff)
                         {
                             Player* Target = itr->getSource();
                             if (Target && Target->IsAlive() && Target->GetSubGroup() == subgroup &&
-                               (!Target->duel || owner == Target) && caster->IsFriendlyTo(Target) &&
+                               (!Target->m_duel || owner == Target) && caster->IsFriendlyTo(Target) &&
                                (caster->IsPvP() || !Target->IsPvP())) // auras dont affect pvp flagged targets if caster is not flagged
                             {
                                 if (caster->IsWithinDistInMap(Target, m_radius))
@@ -1558,7 +1558,7 @@ void Aura::TriggerSpell()
                 for (auto const& it : pList)
                 {
                     Player* pPlayer = it.getSource();
-                    if (pPlayer->GetGUID() == casterGUID) continue;
+                    if (pPlayer->GetGUID() == casterGUID.GetRawValue()) continue;
                     if (!pPlayer) continue;
                     if (pPlayer->IsDead()) continue;
                     // 2d distance should be good enough
@@ -1826,6 +1826,12 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         }
                         return;
                     }
+                    case 20556: // Golemagg's Trust
+                    {
+                            m_isPeriodic = true;
+                            m_modifier.periodictime = 1000;
+                            return;
+                    }
                     case 22646:                             // Goblin Rocket Helmet
                     {
                         if (Unit* caster = GetCaster())
@@ -2062,8 +2068,18 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 23183:                                     // Mark of Frost
             {
                 if (m_removeMode == AURA_REMOVE_BY_DEATH)
-                    target->CastSpell(target, 23182, true, nullptr, this);
-                    return;
+                {
+                    if (Unit* caster = GetCaster())
+                    {
+                        // Azuregos
+                        // TODO verify: Only cast Mark of Frost on targets nearby when engaged?
+                        // if (caster->IsInCombat())
+                        // {
+                            target->CastSpell(target, 23182, true, nullptr, this);
+                        // }
+                    }
+                }
+                return;
             }
             case 28169:                                     // Mutating Injection
             {
@@ -3477,8 +3493,8 @@ void Aura::HandleModCharm(bool apply, bool Real)
                 pPlayer->GetSession()->DoLootRelease(lootGuid);
 
             pPlayer->SetControlledBy(caster);
-            if (pPlayer->i_AI && m_spellAuraHolder->GetId() == 28410)
-                pPlayer->i_AI->enablePositiveSpells = true;
+            if (pPlayer->m_AI && m_spellAuraHolder->GetId() == 28410)
+                pPlayer->m_AI->enablePositiveSpells = true;
         }
         target->UpdateControl();
 
@@ -4237,6 +4253,7 @@ void Aura::HandleAuraModDecreaseSpeed(bool apply, bool Real)
     Unit* target = GetTarget();
 
     target->UpdateSpeed(MOVE_RUN, false);
+    target->UpdateSpeed(MOVE_RUN_BACK, false);
     target->UpdateSpeed(MOVE_SWIM, false);
 }
 
@@ -5266,10 +5283,7 @@ void Aura::HandleModSpellCritChance(bool apply, bool Real)
     if (!Real)
         return;
 
-    if (GetTarget()->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)GetTarget())->UpdateAllSpellCritChances();
-    else
-        GetTarget()->m_baseSpellCritChance += apply ? m_modifier.m_amount : (-m_modifier.m_amount);
+    GetTarget()->UpdateAllSpellCritChances();
 }
 
 void Aura::HandleModSpellCritChanceSchool(bool /*apply*/, bool Real)
@@ -5278,12 +5292,9 @@ void Aura::HandleModSpellCritChanceSchool(bool /*apply*/, bool Real)
     if (!Real)
         return;
 
-    if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
-        return;
-
     for (int school = SPELL_SCHOOL_NORMAL; school < MAX_SPELL_SCHOOL; ++school)
         if (m_modifier.m_miscvalue & (1 << school))
-            ((Player*)GetTarget())->UpdateSpellCritChance(school);
+            GetTarget()->UpdateSpellCritChance(school);
 }
 
 /********************************/
@@ -6793,6 +6804,29 @@ void Aura::PeriodicDummyTick()
                     if (ribbonCount > 1)
                         target->CastSpell(GetCaster(), 29175, true); // Midsummer Pole Buff
 
+                    return;
+                }
+                case 20556: // Golemagg's Trust
+                {
+                    if (Unit* pCaster = GetCaster())
+                    {
+                        if (pCaster->IsDead() && !pCaster->IsInCombat())
+                        {
+                            return;
+                        }
+                        // Golemagg's Core Ragers will deal increased damage
+                        // and have 50% increased attack speed if tanked too close to Golemagg.
+                        std::list<Creature*> addList;
+                        pCaster->GetCreatureListWithEntryInGrid(addList, 11672, 30.0f);
+                        if (!addList.empty())
+                        {
+                            for (const auto& itr : addList)
+                            {
+                                // Golemagg's Trust Buff
+                                pCaster->CastSpell(itr, 20553, true, nullptr, this);
+                            }
+                        }
+                    }
                     return;
                 }
             }
