@@ -33,6 +33,7 @@ class Unit;
 class WorldObject;
 class SpellEntry;
 class SpellCaster;
+struct AuraScript;
 
 namespace Spells
 {
@@ -699,6 +700,7 @@ class SpellEntry
         bool HasAttribute(SpellAttributesEx2 attribute) const { return AttributesEx2 & attribute; }
         bool HasAttribute(SpellAttributesEx3 attribute) const { return AttributesEx3 & attribute; }
         bool HasAttribute(SpellAttributesEx4 attribute) const { return AttributesEx4 & attribute; }
+        bool HasAttribute(SpellAttributesCustom attribute) const { return Custom & attribute; }
 
         bool HasSpellInterruptFlag(SpellInterruptFlags flag) const { return InterruptFlags & flag; }
         bool HasAuraInterruptFlag(SpellAuraInterruptFlags flag) const { return AuraInterruptFlags & flag; }
@@ -1067,6 +1069,8 @@ class SpellEntry
             return false;
         }
 
+        bool CanTriggerWeaponProcs() const;
+
         bool HasDirectThreatIncreaseEffect() const
         {
             for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
@@ -1168,7 +1172,7 @@ class SpellEntry
 
         int32 GetDuration() const;
         int32 GetMaxDuration() const;
-        int32 CalculateDuration(WorldObject const* caster = nullptr) const;
+        int32 CalculateDuration(WorldObject const* caster = nullptr, Unit const* target = nullptr, AuraScript* auraScript = nullptr) const;
         uint32 GetCastTime(SpellCaster const* caster, Spell* spell = nullptr) const;
         uint32 GetCastTimeForBonus(DamageEffectType damagetype) const;
         uint16 GetAuraMaxTicks() const;

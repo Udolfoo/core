@@ -34,11 +34,13 @@
 #include "WorldPacket.h"
 #include "Weather.h"
 #include "Player.h"
+#include "TransactionLog.h"
 #include "Group.h"
 #include "AccountMgr.h"
 #include "AuctionHouseMgr.h"
 #include "ObjectMgr.h"
 #include "CreatureEventAIMgr.h"
+#include "Guild.h"
 #include "GuildMgr.h"
 #include "SpellMgr.h"
 #include "Chat.h"
@@ -611,9 +613,9 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_UINT32_STRICT_CHARTER_NAMES, "StrictCharterNames", 0);
     setConfig(CONFIG_UINT32_STRICT_PET_NAMES,     "StrictPetNames",     0);
 
-    setConfigMinMax(CONFIG_UINT32_MIN_PLAYER_NAME,  "MinPlayerName",  2, 1, MAX_PLAYER_NAME);
-    setConfigMinMax(CONFIG_UINT32_MIN_CHARTER_NAME, "MinCharterName", 2, 1, MAX_CHARTER_NAME);
-    setConfigMinMax(CONFIG_UINT32_MIN_PET_NAME,     "MinPetName",     2, 1, MAX_PET_NAME);
+    setConfigMinMax(CONFIG_UINT32_MIN_PLAYER_NAME,  "MinPlayerName",  2, 2, MAX_PLAYER_NAME);
+    setConfigMinMax(CONFIG_UINT32_MIN_CHARTER_NAME, "MinCharterName", 2, 2, MAX_CHARTER_NAME);
+    setConfigMinMax(CONFIG_UINT32_MIN_PET_NAME,     "MinPetName",     2, 2, MAX_PET_NAME);
 
     setConfig(CONFIG_BOOL_WORLD_AVAILABLE, "WorldAvailable", true);
     setConfig(CONFIG_UINT32_CHARACTERS_CREATING_DISABLED, "CharactersCreatingDisabled", 0);
@@ -1088,7 +1090,6 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_BOOL_ACCURATE_PETS, "Progression.AccuratePetStatistics", true);
     setConfig(CONFIG_BOOL_ACCURATE_LFG, "Progression.AccurateLFGAvailability", true);
     setConfig(CONFIG_BOOL_ACCURATE_PVE_EVENTS, "Progression.AccuratePVEEvents", true);
-    setConfig(CONFIG_BOOL_ACCURATE_SPELL_EFFECTS, "Progression.AccurateSpellEffects", true);
     setConfig(CONFIG_BOOL_NO_RESPEC_PRICE_DECAY, "Progression.NoRespecPriceDecay", true);
     setConfig(CONFIG_BOOL_NO_QUEST_XP_TO_GOLD, "Progression.NoQuestXpToGold", true);
     setConfig(CONFIG_BOOL_RESTORE_DELETED_ITEMS, "Progression.RestoreDeletedItems", true);
@@ -1432,7 +1433,9 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadPageTexts();
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Game Object Templates...");     // must be after LoadPageTexts
-    std::set<uint32> transportDisplayIds = sObjectMgr.LoadGameobjectInfo();
+    sObjectMgr.LoadGameObjectTemplates();
+
+    std::set<uint32> transportDisplayIds = sObjectMgr.GetTransportDisplayIds();
     MMAP::MMapFactory::createOrGetMMapManager()->loadAllGameObjectModels(transportDisplayIds);
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Transport templates...");
@@ -1732,6 +1735,7 @@ void World::SetInitialWorldSettings()
     sScriptMgr.LoadEventScripts();                          // must be after load Creature/Gameobject(Template/Data)
     sScriptMgr.LoadGenericScripts();
     sScriptMgr.LoadCreatureEventAIScripts();
+    sScriptMgr.LoadAreaTriggerScripts();
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">>> Scripts loaded");
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "");
 
@@ -2206,36 +2210,21 @@ class WorldBroadcastTextBuilder
 {
 public:
     typedef std::vector<WorldPacket*> WorldPacketList;
-    explicit WorldBroadcastTextBuilder(uint32 textId) : i_textId(textId) {}
+    explicit WorldBroadcastTextBuilder(uint32 textId, ObjectGuid senderGuid = ObjectGuid()) : i_textId(textId), i_senderGuid(senderGuid) {}
     void operator()(WorldPacketList& data_list, uint32 loc_idx)
     {
         char const* text = sObjectMgr.GetBroadcastText(i_textId, loc_idx);
-        do_helper(data_list, (char*)text);
+        WorldPacket* data = new WorldPacket();
+#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
+        ChatHandler::BuildChatPacket(*data, CHAT_MSG_BG_SYSTEM_NEUTRAL, text, LANG_UNIVERSAL, CHAT_TAG_NONE, i_senderGuid);
+#else
+        ChatHandler::BuildChatPacket(*data, CHAT_MSG_SYSTEM, text, LANG_UNIVERSAL, CHAT_TAG_NONE, i_senderGuid);
+#endif
+        data_list.push_back(data);
     }
 private:
-    char* lineFromMessage(char*& pos)
-    {
-        char* start = strtok(pos, "\n");
-        pos = nullptr;
-        return start;
-    }
-    void do_helper(WorldPacketList& data_list, char* text)
-    {
-        char* pos = text;
-
-        while (char* line = lineFromMessage(pos))
-        {
-            WorldPacket* data = new WorldPacket();
-#if SUPPORTED_CLIENT_BUILD > CLIENT_BUILD_1_6_1
-            ChatHandler::BuildChatPacket(*data, CHAT_MSG_BG_SYSTEM_NEUTRAL, line);
-#else
-            ChatHandler::BuildChatPacket(*data, CHAT_MSG_SYSTEM, line);
-#endif
-            data_list.push_back(data);
-        }
-    }
-
     uint32 i_textId;
+    ObjectGuid i_senderGuid;
 };
 }                                                           // namespace MaNGOS
 
@@ -2302,9 +2291,9 @@ void World::SendWorldTextToBGAndQueue(int32 string_id, uint32 queuedPlayerLevel,
     va_end(ap);
 }
 
-void World::SendBroadcastTextToWorld(uint32 textId)
+void World::SendBroadcastTextToWorld(uint32 textId, ObjectGuid senderGuid)
 {
-    MaNGOS::WorldBroadcastTextBuilder wt_builder(textId);
+    MaNGOS::WorldBroadcastTextBuilder wt_builder(textId, senderGuid);
     MaNGOS::LocalizedPacketListDo<MaNGOS::WorldBroadcastTextBuilder> wt_do(wt_builder);
     for (const auto& itr : m_sessions)
     {
@@ -2327,7 +2316,7 @@ void World::SendGMTicketText(char const* text)
             {
                 Player* player = session->GetPlayer();
                 if (player && player->IsInWorld() && player->IsAcceptTickets())
-                    ChatHandler(player).SendSysMessage(text);
+                    player->SendSysMessage(text);
             }
         }
     }
@@ -3112,7 +3101,7 @@ void World::AddAsyncTask(std::function<void()> task) {
     _asyncTasks.push_back(std::move(task));
 }
 
-void World::LogMoneyTrade(ObjectGuid sender, ObjectGuid receiver, uint32 amount, const char* type, uint32 dataInt)
+void World::LogMoneyTrade(ObjectGuid sender, ObjectGuid receiver, uint32 amount, char const* type, uint32 dataInt)
 {
     if (!LogsDatabase || !getConfig(CONFIG_BOOL_LOGSDB_TRADES))
         return;

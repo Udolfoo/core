@@ -54,7 +54,6 @@ set (game_SRCS
     AI/CreatureEventAI.cpp
     AI/CreatureEventAIMgr.cpp
     AI/CritterAI.cpp
-    AI/GenericSpellAI.cpp
     AI/GuardAI.cpp
     AI/GuardEventAI.cpp
     AI/NullCreatureAI.cpp
@@ -173,12 +172,15 @@ set (game_SRCS
     Objects/DynamicObject.cpp
     Objects/GameObject.cpp
     Objects/Item.cpp
+    Objects/MirrorTimer.cpp
     Objects/Object.cpp
     Objects/Pet.cpp
     Objects/Player.cpp
+    Objects/PlayerTaxi.cpp
     Objects/SpellCaster.cpp
     Objects/TemporarySummon.cpp
     Objects/Totem.cpp
+    Objects/TradeData.cpp
     Objects/Unit.cpp
     Objects/UpdateData.cpp
     Objects/UpdateFields.cpp
@@ -202,6 +204,7 @@ set (game_SRCS
     Spells/SpellEffects.cpp
     Spells/SpellEntry.cpp
     Spells/SpellMgr.cpp
+    Spells/SpellModifier.cpp
     Spells/SpellModMgr.cpp
     Threat/HostileRefManager.cpp
     Threat/ThreatManager.cpp
@@ -242,6 +245,7 @@ set (game_SRCS
     ObjectGuid.h
     ObjectMgr.h
     ObjectPosSelector.h
+    PacketProcessing.h
     PlayerDump.h
     QuestDef.h
     ReputationMgr.h
@@ -386,15 +390,20 @@ set (game_SRCS
     Objects/GameObject.h
     Objects/GameObjectDefines.h
     Objects/Item.h
+    Objects/ItemDefines.h
     Objects/ItemPrototype.h
+    Objects/MirrorTimer.h
     Objects/MovementInfo.h
     Objects/Object.h
     Objects/ObjectDefines.h
     Objects/Pet.h
     Objects/Player.h
+    Objects/PlayerTaxi.h
     Objects/SpellCaster.h
     Objects/TemporarySummon.h
     Objects/Totem.h
+    Objects/TradeData.h
+    Objects/TransactionLog.h
     Objects/Unit.h
     Objects/UnitDefines.h
     Objects/UpdateData.h
@@ -420,6 +429,7 @@ set (game_SRCS
     Spells/SpellDefines.h
     Spells/SpellEntry.h
     Spells/SpellMgr.h
+    Spells/SpellModifier.h
     Spells/SpellModMgr.h
     Threat/HostileRefManager.h
     Threat/ThreatManager.h

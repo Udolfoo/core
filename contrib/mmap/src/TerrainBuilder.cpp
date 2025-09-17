@@ -750,8 +750,7 @@ namespace MMAP
 
             /// Check every map vertice
             // x, y * -1
-            Vector3 up(0, 0, 1);
-
+            
             for (vector<GroupModel>::iterator it = groupModels.begin(); it != groupModels.end(); ++it)
                 for (int t = 0; t < mapVertsCount / 3; ++t)
                 {
@@ -764,7 +763,7 @@ namespace MMAP
 
                     float outDist = -1.0f;
                     float inDist  = -1.0f;
-                    if (it->IsUnderObject(v, up, isM2, &outDist, &inDist)) // inDist < outDist
+                    if (it->IsUnderObject(v, Vector3::up(), isM2, &outDist, &inDist)) // inDist < outDist
                     {
                         //if there are less than 5.0y between terrain and model then mark the terrain as unwalkable
                         if (inDist < 5.0f)
@@ -995,7 +994,7 @@ namespace MMAP
     }
 
     /**************************************************************************/
-    void TerrainBuilder::loadOffMeshConnections(uint32 mapID, uint32 tileX, uint32 tileY, MeshData& meshData, const char* offMeshFilePath)
+    void TerrainBuilder::loadOffMeshConnections(uint32 mapID, uint32 tileX, uint32 tileY, MeshData& meshData, char const* offMeshFilePath)
     {
         // no meshfile input given?
         if (offMeshFilePath == nullptr)

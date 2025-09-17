@@ -302,7 +302,7 @@ struct npc_eris_havenfireAI : public ScriptedAI
                 m_archerGUIDs[j] = summoned->GetGUID();
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SPAWNING);
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                summoned->AddUnitState(UNIT_STAT_ROOT);
+                summoned->AddUnitState(UNIT_STATE_ROOT);
                 break;
             case NPC_WARRIOR:
                 SetAttackOnPeasantOrPlayer(summoned);
@@ -1746,7 +1746,7 @@ CreatureAI* GetAI_npc_joseph_redpath(Creature* pCreature)
 
 bool GossipHello_npc_joseph_redpath(Player* pPlayer, Creature* pCreature)
 {
-    pPlayer->SEND_GOSSIP_MENU(10935, pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(3861, pCreature->GetGUID());
     if (pPlayer->GetQuestStatus(QUEST_BATTLE_DARROWSHIRE) == QUEST_STATUS_INCOMPLETE)
     {
         pPlayer->KilledMonsterCredit(NPC_JOSEPH_REDPATH, pCreature->GetObjectGuid());

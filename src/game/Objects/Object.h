@@ -428,8 +428,8 @@ class Object
 
         uint16 m_valuesCount;
 
-        bool m_objectUpdated;
-        bool m_deleted;          // Object in remove list
+        bool m_objectUpdated;   // Marked for client update
+        bool m_deleted;         // Object in remove list or destroyed
         uint32 m_delayedActions;
 
     private:
@@ -458,7 +458,7 @@ class WorldObject : public Object
         {
             public:
                 explicit UpdateHelper(WorldObject* obj) : m_obj(obj) {}
-                ~UpdateHelper() { }
+                ~UpdateHelper() = default;
 
                 void Update(uint32 time_diff)
                 {
@@ -585,14 +585,14 @@ class WorldObject : public Object
         template <class T >
         bool IsWithinDist2d(T const& position, float dist2compare, SizeFactor distcalc = SizeFactor::BoundingRadius) const { return IsWithinDist2d(position.x, position.y, dist2compare, distcalc); }
         bool IsWithinDist2d(float x, float y, float dist2compare, SizeFactor distcalc = SizeFactor::BoundingRadius) const;
-        bool _IsWithinDist(WorldObject const* obj, float const dist2compare, const bool is3D, SizeFactor distcalc = SizeFactor::BoundingRadius) const;
+        bool _IsWithinDist(WorldObject const* obj, float const dist2compare, bool const is3D, SizeFactor distcalc = SizeFactor::BoundingRadius) const;
 
         // use only if you will sure about placing both object at same map
-        bool IsWithinDist(WorldObject const* obj, float const& dist2compare, const bool is3D = true, SizeFactor distcalc = SizeFactor::BoundingRadius) const
+        bool IsWithinDist(WorldObject const* obj, float const& dist2compare, bool const is3D = true, SizeFactor distcalc = SizeFactor::BoundingRadius) const
         {
             return obj && _IsWithinDist(obj, dist2compare, is3D, distcalc);
         }
-        bool IsWithinDistInMap(WorldObject const* obj, float const& dist2compare, const bool is3D = true, SizeFactor distcalc = SizeFactor::BoundingRadius) const
+        bool IsWithinDistInMap(WorldObject const* obj, float const& dist2compare, bool const is3D = true, SizeFactor distcalc = SizeFactor::BoundingRadius) const
         {
             return obj && IsInMap(obj) && _IsWithinDist(obj, dist2compare, is3D, distcalc);
         }
@@ -623,10 +623,10 @@ class WorldObject : public Object
         float GetLeewayBonusRadius() const;
 
         // Gestion des positions
-        void GetRelativePositions(float fForwardBackward, float fLeftRight, float fUpDown, float &x, float &y, float &z);
-        void GetInCirclePositions(float dist, uint32 curr, uint32 total, float &x, float &y, float &z, float &o);
-        void GetNearRandomPositions(float distance, float &x, float &y, float &z);
-        void GetFirstCollision(float dist, float angle, float &x, float &y, float &z);
+        void GetRelativePositions(float fForwardBackward, float fLeftRight, float fUpDown, float &x, float &y, float &z) const;
+        void GetInCirclePositions(float dist, uint32 curr, uint32 total, float &x, float &y, float &z, float &o) const;
+        void GetNearRandomPositions(float distance, float &x, float &y, float &z) const;
+        void GetFirstCollision(float dist, float angle, float &x, float &y, float &z) const;
 
         // for use only in LoadHelper, Map::Add Map::CreatureCellRelocation
         Cell const& GetCurrentCell() const { return m_currentCell; }
