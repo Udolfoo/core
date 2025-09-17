@@ -57,10 +57,35 @@ struct npc_corporal_keeshan_escortAI : npc_escortAI
     uint32 m_uiMockingBlowTimer;
     uint32 m_uiShieldBashTimer;
 
+    // --- Respawn/Home Cache ---
+
     void Reset() override
     {
         m_uiMockingBlowTimer = 5000;
         m_uiShieldBashTimer  = 8000;
+    }
+
+    void JustRespawned() override
+    {
+        // Reset
+        npc_escortAI::JustRespawned();
+        Reset();                // unsere Timer
+        float m_homeX, m_homeY, m_homeZ, m_homeO;
+
+        //Reset Faction and Quest Giver
+        m_creature->SetFactionTemplateId(FACTION_STORMWIND);
+        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+
+        // SetSpawn
+        if (m_homeX || m_homeY || m_homeZ)
+        {
+            m_creature->NearTeleportTo(m_homeX, m_homeY, m_homeZ, m_homeO);
+            m_creature->SetHomePosition(m_homeX, m_homeY, m_homeZ, m_homeO);
+        }
+
+        // Clear Movement
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveTargetedHome();
     }
 
     void WaypointStart(uint32 uiWP) override
