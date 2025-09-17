@@ -57,10 +57,39 @@ struct npc_corporal_keeshan_escortAI : npc_escortAI
     uint32 m_uiMockingBlowTimer;
     uint32 m_uiShieldBashTimer;
 
+    // --- Respawn/Home Cache ---
+
     void Reset() override
     {
         m_uiMockingBlowTimer = 5000;
         m_uiShieldBashTimer  = 8000;
+    }
+
+    void JustRespawned() override
+    {
+        // Timers/State neu
+        npc_escortAI::JustRespawned();
+        Reset();                // unsere Timer
+        float m_homeX, m_homeY, m_homeZ, m_homeO;
+
+        // Faction/Gossip wiederherstellen (failsafe – DB sollte das zwar setzen, wir erzwingen es)
+        // Nutze SetFaction(...) falls SetFactionTemplateId nicht existiert
+        m_creature->SetFactionTemplateId(FACTION_STORMWIND);
+        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+
+        // An den echten Spawn/HOME zurück (falls Core ihn an Todesstelle respawnt)
+        if (m_homeX || m_homeY || m_homeZ)
+        {
+            m_creature->NearTeleportTo(m_homeX, m_homeY, m_homeZ, m_homeO);
+            m_creature->SetHomePosition(m_homeX, m_homeY, m_homeZ, m_homeO);
+        }
+
+        // Bewegungsgenerator auf „TargetedHome“ → steht stabil am Spawn
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveTargetedHome();
+
+        // Optional: Sitz-/Standhaltung definieren (je nach gewünschtem Startzustand)
+        // m_creature->SetStandState(UNIT_STAND_STATE_SIT);
     }
 
     void WaypointStart(uint32 uiWP) override
