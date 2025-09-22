@@ -115,4 +115,9 @@ void AddSC_rogue_spell_scripts()
     newscript->Name = "spell_rogue_vanish";
     newscript->GetSpellScript = &GetScript_RogueVanish;
     newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "spell_rogue_sap";
+    newscript->GetSpellScript = &GetScript_RogueSap;
+    newscript->RegisterSelf();
 }
