@@ -89,7 +89,7 @@ struct CookedDeviateFishScript : public SpellScript
 #if SUPPORTED_CLIENT_BUILD <= CLIENT_BUILD_1_5_1
             randomSpellId = spells[urand(0, 5)];
 #else
-            randomSpellId = spells[urand(0, 1)];
+            randomSpellId = spells[urand(0, 5)];
 #endif
             pPlayer->CastSpell(pPlayer, randomSpellId, true, nullptr);
         }
