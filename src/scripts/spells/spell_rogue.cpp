@@ -77,6 +77,31 @@ SpellScript* GetScript_RogueVanish(SpellEntry const*)
     return new RogueVanishScript();
 }
 
+// 6770, 2070, 11297 - Sap
+struct RogueSapScript : SpellScript
+{
+    void OnSuccessfulFinish(Spell* spell) const
+    {
+        Unit* pTarget = spell->GetUnitTarget();
+        if (pTarget)
+        {
+            if (spell->ShouldRemoveStealthAuras())
+            {
+                spell->GetCaster()->ToUnit()->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+                if (pTarget->AI())
+                    pTarget->AI()->AttackStart(spell->GetCaster()->ToUnit());
+            }
+                
+        }
+        
+    }
+};
+
+SpellScript* GetScript_RogueSap(SpellEntry const*)
+{
+    return new RogueSapScript();
+}
+
 void AddSC_rogue_spell_scripts()
 {
     Script* newscript;
@@ -89,5 +114,10 @@ void AddSC_rogue_spell_scripts()
     newscript = new Script;
     newscript->Name = "spell_rogue_vanish";
     newscript->GetSpellScript = &GetScript_RogueVanish;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "spell_rogue_sap";
+    newscript->GetSpellScript = &GetScript_RogueSap;
     newscript->RegisterSelf();
 }
