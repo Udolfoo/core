@@ -14,6 +14,9 @@ DELETE FROM creature_groups WHERE leader_guid=33964;
 -- Fix Legion Hound Damage in Ashenvale
 UPDATE `creature_template` SET `damage_multiplier` = '0.9' WHERE `creature_template`.`entry` = 6071 AND `creature_template`.`patch` = 0;
 
+--Fix All Chests Respawns due to Economy
+UPDATE gameobject SET spawntimesecsmin = 7200, spawntimesecsmax = 7200 WHERE id IN ( 2850, 2852, 2855, 4149, 153451, 153453, 153454, 153463, 2843, 2844, 2849, 106318, 106319 );
+
 -- End of migration.
 END IF;
 END??
