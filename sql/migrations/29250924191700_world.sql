@@ -8,7 +8,7 @@ IF v = 0 THEN
 INSERT INTO `migrations` VALUES ('20250817105838');
 -- Add your query below.
 
-//Wrong Linking in WC by Druid of the Fang
+--Wrong Linking in WC by Druid of the Fang
 DELETE FROM creature_groups WHERE leader_guid=33964;
 
 -- End of migration.
