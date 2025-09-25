@@ -6919,16 +6919,24 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_AURA_MOD_DISARM:
             {
+                // 14251 Riposte should be able to used against targets with no weapons
+                // Patch 1.4.0 - Fixed a bug that prevented the ability from being used when the target had no weapon or was already disarmed
+                bool allowUnarmedTarget = (m_spellInfo && m_spellInfo->Id == 14251);
+
                 if (Creature* pTarget = ToCreature(m_targets.getUnitTarget()))
                 {
-                    if (!pTarget->CanUseEquippedWeapon(BASE_ATTACK) ||
+                    bool noWeapon =
+                        !pTarget->CanUseEquippedWeapon(BASE_ATTACK) ||
                         !pTarget->GetVirtualItemDisplayId(BASE_ATTACK) ||
-                        pTarget->GetVirtualItemClass(BASE_ATTACK) != ITEM_CLASS_WEAPON)
+                        pTarget->GetVirtualItemClass(BASE_ATTACK) != ITEM_CLASS_WEAPON;
+
+                    if (noWeapon && !allowUnarmedTarget)
                         return SPELL_FAILED_TARGET_NO_WEAPONS;
                 }
                 else if (Player* pTarget = ToPlayer(m_targets.getUnitTarget()))
                 {
-                    if (!pTarget->GetWeaponForAttack(BASE_ATTACK, true, true))
+                    bool noWeapon = !pTarget->GetWeaponForAttack(BASE_ATTACK, true, true);
+                    if (noWeapon && !allowUnarmedTarget)
                         return SPELL_FAILED_TARGET_NO_WEAPONS;
                 }
                 break;
