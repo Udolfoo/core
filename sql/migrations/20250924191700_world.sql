@@ -3,9 +3,9 @@ DELIMITER ??
 CREATE PROCEDURE `add_migration`()
 BEGIN
 DECLARE v INT DEFAULT 1;
-SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20250817105838');
+SET v = (SELECT COUNT(*) FROM `migrations` WHERE `id`='20250924191700');
 IF v = 0 THEN
-INSERT INTO `migrations` VALUES ('20250817105838');
+INSERT INTO `migrations` VALUES ('20250924191700');
 -- Add your query below.
 
 --Wrong Linking in WC by Druid of the Fang
