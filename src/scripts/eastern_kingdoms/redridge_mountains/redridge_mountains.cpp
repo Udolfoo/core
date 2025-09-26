@@ -68,18 +68,10 @@ struct npc_corporal_keeshan_escortAI : npc_escortAI
         // Reset EscortAI
         npc_escortAI::JustRespawned();
         Reset(); 
-        float m_homeX, m_homeY, m_homeZ, m_homeO;
 
         //Reset Faction and Quest Giver Flag
         m_creature->SetFactionTemplateId(FACTION_STORMWIND);
         m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-
-        // SetSpawn
-        if (m_homeX || m_homeY || m_homeZ)
-        {
-            m_creature->NearTeleportTo(m_homeX, m_homeY, m_homeZ, m_homeO);
-            m_creature->SetHomePosition(m_homeX, m_homeY, m_homeZ, m_homeO);
-        }
 
         // Clear Movement
         m_creature->GetMotionMaster()->Clear();
