@@ -11,6 +11,8 @@ INSERT INTO `migrations` VALUES ('20250924191700');
 -- Wrong Linking in WC by Druid of the Fang
 DELETE FROM creature_groups WHERE `creature_groups`.`member_guid` = 33963;
 DELETE FROM creature_groups WHERE `creature_groups`.`member_guid` = 33962;
+DELETE FROM creature_groups WHERE `creature_groups`.`member_guid` = 33934;
+DELETE FROM creature_groups WHERE `creature_groups`.`member_guid` = 33935;
 
 -- Fix Legion Hound Damage in Ashenvale
 UPDATE `creature_template` SET `damage_multiplier` = '0.9' WHERE `creature_template`.`entry` = 6071 AND `creature_template`.`patch` = 0;
