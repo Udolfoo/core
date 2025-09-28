@@ -561,7 +561,6 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 amount, uint
     uint32 triggered_spell_id = 0;
     Unit* target = pVictim;
     int32  basepoints[MAX_EFFECT_INDEX] = {0, 0, 0};
-
     int8 stacks_left = triggeredByAura->GetHolder()->GetAuraCharges();
     
     switch (dummySpell->SpellFamilyName)
