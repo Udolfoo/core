@@ -21,6 +21,9 @@ INSERT INTO `spell_mod` (`Id`, `procChance`, `procFlags`, `procCharges`, `Durati
 -- Fix Legion Hound Damage in Ashenvale
 UPDATE `creature_template` SET `damage_multiplier` = '0.9' WHERE `creature_template`.`entry` = 6071 AND `creature_template`.`patch` = 0;
 
+-- Fix Volcor Spawntime
+UPDATE `creature` SET `spawntimesecsmax` = '30', `spawntimesecsmin` = '30' WHERE `creature`.`guid` = 37096;
+
 -- Fix All Chests Respawns due to Economy
 UPDATE gameobject SET spawntimesecsmin = 7200, spawntimesecsmax = 7200 WHERE id IN ( 2850, 2852, 2855, 4149, 153451, 153453, 153454, 153463, 2843, 2844, 2849, 106318, 106319 );
 
