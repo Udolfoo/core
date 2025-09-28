@@ -19,7 +19,7 @@
 // 5246 - Intimidating Shout
 struct WarriorIntimidatingShoutScript : SpellScript
 {
-    bool OnCheckTarget(Spell const* spell, Unit* target, SpellEffectIndex eff) const final
+    bool OnCheckTarget(Spell const* spell, Unit* target, SpellEffectIndex /*eff*/) const final
     {
         Unit* main = spell->m_targets.getUnitTarget();
         if (!main)
