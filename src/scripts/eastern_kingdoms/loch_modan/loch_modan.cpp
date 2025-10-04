@@ -91,6 +91,17 @@ struct npc_miranAI: public npc_escortAI
         }
     }
 
+    void JustRespawned() override
+    {
+        // Reset EscortAI
+        npc_escortAI::JustRespawned();
+        Reset(); 
+
+        // Clear Movement
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveTargetedHome();
+    }
+
     void JustSummoned(Creature* pSummoned) override
     {
         if (pSummoned->GetEntry() == NPC_DARK_IRON_RAIDER)
