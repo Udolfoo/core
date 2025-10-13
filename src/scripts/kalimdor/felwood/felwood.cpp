@@ -145,6 +145,7 @@ enum
     GO_ARKONARIN_CHEST              = 176225,
     GO_ARKONARIN_CAGE               = 176306,
 
+    NPC_ARKO_NARIN_BASE             = 11016,
     NPC_ARKO_NARIN                  = 11018
 };
 
@@ -173,8 +174,15 @@ struct npc_captured_arkonarinAI : npc_escortAI
 
     void JustRespawned() override
     {
+        m_creature->UpdateEntry(NPC_ARKO_NARIN_BASE);  
+
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC);
+        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
         npc_escortAI::JustRespawned();
+
+        // Clear Movement
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveTargetedHome();
     }
 
     void Aggro(Unit* pWho) override
