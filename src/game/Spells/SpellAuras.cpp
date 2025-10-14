@@ -8439,6 +8439,8 @@ bool _IsExclusiveSpellAura(SpellEntry const* spellproto, SpellEffectIndex eff, A
         case 23179: // Taint of Shadow
         case 20007: // Holy Strength
         case 20572: // Blood Fury
+        case 23234: // Blood Fury Proc
+        case 8017: // Rockbiter Rank 1
         case 17038: // Winterfall Firewater
         case 16329: // Juju Might
         case 25891: // Earthstrike
