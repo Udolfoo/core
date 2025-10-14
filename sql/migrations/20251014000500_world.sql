@@ -18,6 +18,14 @@ WHERE `groupid` = 0
     14232,14233,14234,4841,4339,10321
   );
 
+-- Fix Supply Chests in Stratholme
+UPDATE `gameobject_template` SET `size` = '0.99' WHERE `gameobject_template`.`entry` = 175535 AND `gameobject_template`.`patch` = 0;
+UPDATE gameobject_template
+SET
+  data2 = 0,
+  data4 = 2
+WHERE entry = 175535 AND type = 6;
+
 -- End of migration.
 END IF;
 END??
