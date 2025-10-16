@@ -26,6 +26,9 @@ SET
   data4 = 2
 WHERE entry = 175535 AND type = 6;
 
+-- Make Cuergo's Gold repeatable
+UPDATE `quest_template` SET `SpecialFlags` = '1' WHERE `quest_template`.`entry` = 2882 AND `quest_template`.`patch` = 0;
+
 -- End of migration.
 END IF;
 END??
