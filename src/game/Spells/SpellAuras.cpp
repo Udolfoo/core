@@ -6230,6 +6230,78 @@ void Aura::PeriodicTick(SpellEntry const* sProto, AuraType auraType, uint32 data
             break;
         }
         case SPELL_AURA_PERIODIC_HEAL:
+        {
+            Unit* target = GetTarget();
+            Unit* caster = GetCaster();
+            if (!target || !caster) break;
+
+            SpellEntry const* info = GetSpellProto();
+            bool isHF = info &&
+                info->SpellFamilyName == SPELLFAMILY_WARLOCK &&
+                info->IsFitToFamilyMask<CF_WARLOCK_HEALTH_FUNNEL>();
+
+            uint32 heal = m_modifier.m_amount;
+
+            if (isHF && GetEffIndex() == EFFECT_INDEX_0)
+            {
+                // manaCost
+                bool firstTick =
+                    #if defined(HAVE_GET_TICK_NUMBER)
+                        (GetTickNumber() == 0);
+                    #else
+                        false;
+                    #endif
+
+                if (firstTick)
+                {
+                    int32 initHp = (info->powerType == POWER_HEALTH) ? (int32)info->manaCost : 0;
+                    if ((int32)caster->GetHealth() <= initHp + 1)
+                    {
+                        target->RemoveAurasDueToSpell(info->Id);
+                        caster->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                        break;
+                    }
+                    if (initHp > 0)
+                    {
+                        caster->SendSpellNonMeleeDamageLog(
+                            caster, info->Id, initHp, info->GetSpellSchoolMask(),
+                            0, 0, true, 0, false
+                        );
+                        caster->ModifyHealth(-initHp);
+                    }
+                }
+
+                // manaPerSecond
+                uint32 tickMs = m_modifier.periodictime;
+                if (!tickMs) tickMs = 1000;  // Fallback: 1s
+                
+                int32 perSec = (info->powerType == POWER_HEALTH) ? (int32)info->manaPerSecond : 0;
+                int32 hpTick = (int32)(((int64)perSec * tickMs + 500) / 1000);
+
+                if ((int32)caster->GetHealth() <= hpTick + 1)
+                {
+                    target->RemoveAurasDueToSpell(info->Id);
+                    caster->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                    break;
+                }
+
+                // Heal log
+                caster->DealHeal(target, heal, info);
+                if (hpTick > 0)
+                {
+                    caster->SendSpellNonMeleeDamageLog(
+                        caster, info->Id, hpTick, info->GetSpellSchoolMask(),
+                        0, 0, true, 0, false
+                    );
+                    caster->ModifyHealth(-hpTick);
+                }
+            }
+            else
+            {
+                caster->DealHeal(target, heal, info);
+            }
+            break;
+        }
         case SPELL_AURA_OBS_MOD_HEALTH:
         {
             // don't heal target if not alive, mostly death persistent effects from items
@@ -6302,8 +6374,10 @@ void Aura::PeriodicTick(SpellEntry const* sProto, AuraType auraType, uint32 data
 
             target->GetHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f * sSpellMgr.GetSpellThreatMultiplier(spellProto), spellProto);
 
-            // heal for caster damage
-            if (target != pCaster && spellProto->SpellVisual == 163)
+            // heal for caster damage, but exclude Warlock Health Funnel
+            if (target != pCaster && spellProto->SpellVisual == 163 &&
+                !(spellProto->SpellFamilyName == SPELLFAMILY_WARLOCK &&
+                spellProto->IsFitToFamilyMask<CF_WARLOCK_HEALTH_FUNNEL>()))
             {
                 uint32 dmg = spellProto->manaPerSecond;
                 if (pCaster->GetHealth() <= dmg && pCaster->GetTypeId() == TYPEID_PLAYER)
@@ -8439,8 +8513,8 @@ bool _IsExclusiveSpellAura(SpellEntry const* spellproto, SpellEffectIndex eff, A
         case 23179: // Taint of Shadow
         case 20007: // Holy Strength
         case 20572: // Blood Fury
-        case 23234: // Blood Fury Proc
-        case 8017: // Rockbiter Rank 1
+        case 23234: // Blood Fury2
+        case 8017: // Rockbiter
         case 17038: // Winterfall Firewater
         case 16329: // Juju Might
         case 25891: // Earthstrike
