@@ -29,6 +29,10 @@ WHERE entry = 175535 AND type = 6;
 -- Make Cuergo's Gold repeatable
 UPDATE `quest_template` SET `SpecialFlags` = '1' WHERE `quest_template`.`entry` = 2882 AND `quest_template`.`patch` = 0;
 
+-- Fix Egg Freezing Quest Chain
+UPDATE `quest_template` SET `BreadcrumbForQuestId` = '0' WHERE `quest_template`.`entry` = 4907 AND `quest_template`.`patch` = 0;
+UPDATE `quest_template` SET `PrevQuestId` = '4907' WHERE `quest_template`.`entry` = 4734 AND `quest_template`.`patch` = 0;
+
 -- End of migration.
 END IF;
 END??
