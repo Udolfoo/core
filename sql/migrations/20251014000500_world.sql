@@ -33,6 +33,29 @@ UPDATE `quest_template` SET `SpecialFlags` = '1' WHERE `quest_template`.`entry` 
 UPDATE `quest_template` SET `BreadcrumbForQuestId` = '0' WHERE `quest_template`.`entry` = 4907 AND `quest_template`.`patch` = 0;
 UPDATE `quest_template` SET `PrevQuestId` = '4907' WHERE `quest_template`.`entry` = 4734 AND `quest_template`.`patch` = 0;
 
+-- Remove Pooling from Serpentbloom in WC
+DELETE pg
+FROM pool_gameobject AS pg
+LEFT JOIN pool_template AS pt ON pt.entry = pg.pool_entry
+WHERE pg.description = 'Wailing Caverns - Serpentbloom'
+   OR pt.description IN ('Wailing Caverns - Serpentbloom',
+                         'Wailing Caverns - Serpentbloom (Master Pool)');
+
+DELETE pp
+FROM pool_pool AS pp
+LEFT JOIN pool_template AS pt ON pt.entry = pp.mother_pool
+WHERE pp.description = 'Wailing Caverns - Serpentbloom'
+   OR pt.description = 'Wailing Caverns - Serpentbloom (Master Pool)';
+
+
+DELETE FROM pool_template
+WHERE description IN ('Wailing Caverns - Serpentbloom',
+                      'Wailing Caverns - Serpentbloom (Master Pool)');
+
+DELETE FROM gameobject
+WHERE id = 19535
+  AND map = 43;
+
 -- End of migration.
 END IF;
 END??
