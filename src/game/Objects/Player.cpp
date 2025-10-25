@@ -1986,7 +1986,7 @@ bool Player::ExecuteTeleportFar(ScheduledTeleportData* data)
         * 2. The teleported player tp to homebind <- Should remove teleport invitation
         * 3. And accepts teleport to come back to the instance
         */
-        m_summon_expire = 0;
+        //m_summon_expire = 0;
 
         // remove player from battleground on far teleport (when changing maps)
         if (BattleGround const* bg = GetBattleGround())
