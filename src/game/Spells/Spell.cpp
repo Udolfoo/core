@@ -1688,7 +1688,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             this));
     }
 
-    if (m_casterUnit && m_casterUnit != unitTarget && m_spellInfo->CanTriggerWeaponProcs())
+    if (m_casterUnit && m_casterUnit != unitTarget && (m_spellInfo->CanTriggerWeaponProcs() || m_spellInfo->Id == 9633))
     {
         if (m_casterUnit->IsPlayer() && unitTarget->IsAlive())
             ((Player*)m_casterUnit)->CastItemCombatSpell(unitTarget, m_spellInfo->EquippedItemClass == ITEM_CLASS_WEAPON ? m_attackType : BASE_ATTACK);
@@ -3842,6 +3842,10 @@ void Spell::cast(bool skipCheck)
     {
         case SPELLFAMILY_GENERIC:
         {
+            // White Hit for Spellproc
+            if (m_spellInfo->Id == 9633)
+                m_canTrigger = true;
+            
             // Bandages
             if (m_spellInfo->Mechanic == MECHANIC_BANDAGE)
                 AddPrecastSpell(11196);                     // Recently Bandaged
